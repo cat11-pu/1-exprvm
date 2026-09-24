@@ -23,6 +23,7 @@ def main() -> int:
     print("错误定位 =", [(item["text"], exprvm.locate(item["text"])) for item in spec["errors"]])
     print("老入口仍按累加 =", engine.check(spec["legacy"]))
     print("未定义变量报错条数 =", sum(1 for item in spec["errors"] if exprvm.locate(item["text"])))
+    print("表达式条数 =", len(spec["exprs"]))
     return 0
 
 

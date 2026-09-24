@@ -1,7 +1,14 @@
 import unittest
 
 import rules
-from exprvm import ExprError, evaluate
+from exprvm import (
+    ExprError,
+    compile_expression,
+    evaluate,
+    locate,
+    run,
+    short_circuit_count,
+)
 
 
 class TestExpr(unittest.TestCase):
@@ -23,6 +30,54 @@ class TestExpr(unittest.TestCase):
 
     def test_engine_scope_default(self):
         self.assertEqual(rules.RuleEngine().scope, {})
+
+
+class TestCompileRun(unittest.TestCase):
+    def test_precedence(self):
+        code = compile_expression("a + 3 * 4")
+        self.assertEqual(len(code), 5)
+        self.assertEqual(run(code, {"a": 2}), 14)
+
+    def test_parens(self):
+        code = compile_expression("(a + 3) * 4")
+        self.assertEqual(len(code), 7)
+        self.assertEqual(run(code, {"a": 2}), 20)
+
+    def test_unary(self):
+        code = compile_expression("-a + +c")
+        self.assertEqual(len(code), 5)
+        self.assertEqual(run(code, {"a": 2, "c": 5}), 3)
+
+    def test_short_circuit_and(self):
+        code = compile_expression("b != 0 and c / b")
+        self.assertEqual(len(code), 10)
+        self.assertEqual(run(code, {"b": 0, "c": 5}), 0)
+        self.assertEqual(short_circuit_count(code), 4)
+
+    def test_short_circuit_or(self):
+        code = compile_expression("a > 1 or c < 1")
+        self.assertEqual(len(code), 8)
+        self.assertEqual(run(code, {"a": 2, "c": 5}), 1)
+        self.assertEqual(short_circuit_count(code), 4)
+
+    def test_div_by_zero(self):
+        with self.assertRaises(ExprError):
+            run(compile_expression("1 / 0"))
+
+    def test_undefined_var(self):
+        with self.assertRaises(ExprError):
+            run(compile_expression("x + 1"), {})
+
+    def test_locate(self):
+        self.assertEqual(locate("a + "), 4)
+        self.assertEqual(locate("(a + 3"), 6)
+        self.assertEqual(locate("a @ 3"), 5)
+        self.assertEqual(locate("a + 1"), 0)
+
+    def test_check_all(self):
+        engine = rules.RuleEngine()
+        engine.set("a", 2)
+        self.assertEqual(engine.check_all(["a + 1", "a * 2"]), [3, 4])
 
 
 if __name__ == "__main__":

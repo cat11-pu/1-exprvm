@@ -1,7 +1,7 @@
 """rules.py：规则引擎（老入口 evaluate 不能改）。"""
 from __future__ import annotations
 
-from exprvm import evaluate
+from exprvm import compile_expression, evaluate, run
 
 
 class RuleEngine:
@@ -16,4 +16,5 @@ class RuleEngine:
         return evaluate(text)
 
     def check_all(self, texts) -> list:
-        raise NotImplementedError("批量编译执行还没实现")
+        """批量编译执行：逐条编译后在当前作用域运行。"""
+        return [run(compile_expression(text), self.scope) for text in texts]
