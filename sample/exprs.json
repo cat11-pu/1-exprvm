@@ -1,0 +1,16 @@
+{
+  "scope": {"a": 2, "b": 0, "c": 5},
+  "exprs": [
+    {"text": "a + 3 * 4"},
+    {"text": "(a + 3) * 4"},
+    {"text": "b != 0 and c / b"},
+    {"text": "a > 1 or c < 1"},
+    {"text": "-a + +c"}
+  ],
+  "errors": [
+    {"text": "a + "},
+    {"text": "(a + 3"},
+    {"text": "a @ 3"}
+  ],
+  "legacy": "1 2 3"
+}
